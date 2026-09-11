@@ -7,8 +7,10 @@
     "start": "nodemon --inspect app.js"
   },
   "dependencies": {
+    "bcryptjs": "^3.0.3",
     "dotenv": "^17.4.2",
     "express": "^5.2.1",
+    "joi": "18.2.8",
     "mongoose": "^9.9.3",
     "nodemon": "^3.1.14",
     "pug": "^3.0.4"
