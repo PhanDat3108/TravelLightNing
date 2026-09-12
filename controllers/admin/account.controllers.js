@@ -1,6 +1,7 @@
-const e = require("express")
+const express = require("express")
 const AccountAdmin = require("../../models/account-admin.model")
 const bcrypt= require( "bcryptjs");
+const jwt = require('jsonwebtoken');
 
 
 
@@ -55,7 +56,7 @@ module.exports.loginPost = async (req, res) => {
     })
     return;
    }
-   const isPasswordValid= await bcrypt.compare(password,hash);
+   const isPasswordValid= await bcrypt.compare(password, existAccount.password);
    if (!isPasswordValid){
     res.json({
         code:"error",
@@ -68,6 +69,17 @@ module.exports.loginPost = async (req, res) => {
         message:"Tai khoan chua duoc kich hoat"
     })
    }
+   const token = jwt.sign({
+    id: existAccount.id,
+    email: existAccount.email
+   }, process.env.JWT_SECRET, {
+    expiresIn: '1d'
+   });
+   res.cookie("token",token,{
+    maxAge: 24*60*60*1000,
+    httpOnly: true,
+    sameSite:'strict'
+})
    res.json({
     code:"success",
     message:"Đăng nhập thành công"
