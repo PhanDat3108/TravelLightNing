@@ -1,5 +1,6 @@
 const express = require('express');
 const path = require('path')
+const cookieParser = require('cookie-parser');
 const app = express()
 require ('dotenv').config();
 const database= require('./config/database')
@@ -51,11 +52,13 @@ app.get('/', (req, res) => {
 })
 app.locals.pathAdmin=variableConfig.pathAdmin;
 app.use(express.json())
+app.use(express.urlencoded({ extended: true }));
+app.use(cookieParser());
 // Khởi tạo các route
 app.use('/', clientRoutes);
 app.use(`/${variableConfig.pathAdmin}`,adminRoutes)
 
-
+global.pathAdmin= variableConfig.pathAdmin;
 
 app.listen(port, () => {
     console.log(`http://localhost:${port}`)

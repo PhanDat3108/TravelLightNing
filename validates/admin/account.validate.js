@@ -93,13 +93,13 @@ const schema = Joi.object({
         "password.special":"Phai co it nhat mot ki tu dac biet",
 
     }),
-   
+   rememberPassword: Joi.boolean()
 
 
 });
 const {error}=schema.validate(req.body)
 if (error){
-const errorMessage= error.details[0].message;
+const errorMessage= error.details[0].message
     res.json({
         code:"error",
         message: errorMessage,
