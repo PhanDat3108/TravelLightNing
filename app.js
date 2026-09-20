@@ -1,15 +1,19 @@
 const express = require('express');
 const path = require('path')
+const flash = require('express-flash')
+const session = require('express-session')
+
+
 const cookieParser = require('cookie-parser');
 const app = express()
-require ('dotenv').config();
-const database= require('./config/database')
-const variableConfig= require('./config/variable')
+require('dotenv').config();
+const database = require('./config/database')
+const variableConfig = require('./config/variable')
 
 //ket noi database
 database.connect();
 const port = 3000
-const adminRoutes= require('./routes/admin/index.route')
+const adminRoutes = require('./routes/admin/index.route')
 const clientRoutes = require('./routes/client/index.route')
 // setup view làm thu mục chứa cái bên dao diện
 app.set('views', path.join(__dirname, 'views'))
@@ -43,22 +47,26 @@ app.locals.permissions = [
 ]; // Dữ liệu giả lập phân quyền để Sider hiện menu
 
 app.use(express.static(path.join(__dirname, 'public')))
+app.use(express.json())
+app.use(express.urlencoded({ extended: true }));
+app.use(cookieParser("Lololololo"));
+app.use(session({ secret: "Lololololo", resave: false, saveUninitialized: true, cookie: { maxAge: 60000 } }));
+app.use(flash());
+
+app.locals.pathAdmin = variableConfig.pathAdmin;
+
 app.get('/', (req, res) => {
-    res.render('client/pages/home.pug', { 
+    res.render('client/pages/home.pug', {
         pageTitle: "Trang chu doa e", // Đổi title thành pageTitle cho khớp giao diện
         tourListSection2: [], // Mảng rỗng chống lỗi ở section 2
         tourListSection4: []  // Mảng rỗng chống lỗi ở section 4
     })
 })
-app.locals.pathAdmin=variableConfig.pathAdmin;
-app.use(express.json())
-app.use(express.urlencoded({ extended: true }));
-app.use(cookieParser());
 // Khởi tạo các route
 app.use('/', clientRoutes);
-app.use(`/${variableConfig.pathAdmin}`,adminRoutes)
+app.use(`/${variableConfig.pathAdmin}`, adminRoutes)
 
-global.pathAdmin= variableConfig.pathAdmin;
+global.pathAdmin = variableConfig.pathAdmin;
 
 app.listen(port, () => {
     console.log(`http://localhost:${port}`)

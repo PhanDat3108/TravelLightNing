@@ -16,7 +16,7 @@ router.post('/register', accountValidate.registerPost, accountController.registe
 )
 router.post('/forgot-password', accountController.forgotPasswordPost
 )
-router.get('/forgot-password', accountController.forgotPassword
+router.get('/forgot-password', accountValidate.resetPasswordPost, accountController.forgotPassword
 )
 router.post('/otp-password', accountController.otpPasswordPost
 )
