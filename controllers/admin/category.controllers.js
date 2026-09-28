@@ -4,9 +4,35 @@ const categoryHelper = require("../../helpers/category.helper")
 const moment = require("moment")
 const { pathAdmin } = require("../../config/variable")
 module.exports.list = async (req, res) => {
-    const categoryList = await Category.find({
+    const accountAdmin = await AccountAdmin.find({}).select("_id fullname")
+    console.log(accountAdmin)
+    const find = {
         deleted: false
-    }).sort({
+    }
+    if (req.query.status) {
+        find.status = req.query.status
+    }
+    if (req.query.createdBy) {
+        find.createdBy = req.query.createdBy
+    }
+    const dateFilter = {};
+    // lọc theo ngày tạo 
+    if (req.query.startDate) {
+        const startDate = moment(req.query.startDate).startOf("date").toDate();
+        dateFilter.$gte = startDate
+
+
+    }
+    if (req.query.endDate) {
+        const endDate = moment(req.query.endDate).endOf("date").toDate();
+        dateFilter.$lte = endDate
+
+
+    }
+    if (Object.keys(dateFilter).length > 0) {
+        find.createdAt = dateFilter;
+    }
+    const categoryList = await Category.find(find).sort({
         position: "asc"
     })
 
@@ -15,18 +41,22 @@ module.exports.list = async (req, res) => {
             const createdByFullName = await AccountAdmin.findOne({ _id: item.createdBy })
             item.createdByFullName = createdByFullName.fullname;
 
+
         }
         if (item.updatedBy) {
             const updatedByFullName = await AccountAdmin.findOne({ _id: item.updatedBy })
             item.updatedByFullName = updatedByFullName.fullname;
         }
+
         item.createdAtFormat = moment(item.createdAt).format("HH:mm - DD/MM/YYYY")
-        item.updateAtFormat = moment(item.updateAt).format("HH:mm - DD/MM/YYYY")
+        item.updatedAtFormat = moment(item.updatedAt).format("HH:mm - DD/MM/YYYY")
 
     }
 
+
     res.render('admin/pages/category-list', {
         categoryList: categoryList,
+        accountAdminList: accountAdmin,
     })
 
 }
@@ -122,3 +152,75 @@ module.exports.editPatch = async (req, res) => {
 
     }
 }
+module.exports.deletePatch = async (req, res) => {
+    try {
+        const id = req.params.id;
+
+        const deletedBy = req.account.id;
+
+
+        const result = await Category.updateOne({ _id: id, deleted: false }, {
+            deleted: true,
+            deletedBy: deletedBy,
+            deletaAt: Date.now()
+        })
+
+        if (result.matchedCount === 0) {
+            return res.redirect(`/${pathAdmin}/category/list`)
+        }
+
+        req.flash(
+            "success", " Xoa danh muc thành công"
+        )
+        res.json({
+            code: "success",
+            message: "Xoa danh muc thanh cong"
+        })
+    }
+    catch (error) {
+        res.json({
+            code: "error",
+            message: "ID khong hop le"
+        })
+
+
+    }
+}
+module.exports.changeMultiPatch = async (req, res) => {
+    try {
+        console.log(req.body);
+        const option = req.body.option;
+
+        const arrid = req.body.ids;
+        switch (option) {
+            case "active":
+            case "inactive":
+                await Category.updateMany(
+                    { _id: { $in: ids } }
+
+                ), {
+                    status: option
+                }
+            case "deleted":
+                await Category.updateMany(
+                    { _id: { $in: ids } }
+
+                ), {
+                    deleted: true,
+                    deletedBy: req.account.id,
+                    deletedAt: Date.now()
+                }
+
+
+        }
+        arrid.forEach(item => {
+
+        });
+        req.flash("success", "Doi trang thai thanh cong")
+        res.json({
+            code: "success",
+            message: "Chinh sua thanh cong"
+        })
+    }
+    catch (err) { }
+};

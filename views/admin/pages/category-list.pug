@@ -4,26 +4,26 @@ block main
   h1.box-title Quản lý danh mục
 
   //- Section 4
-  //- .section-4
-  //-   .inner-wrap
-  //-     .inner-item.inner-label
-  //-       <i class="fa-solid fa-filter"></i> Bộ lọc
-  //-     .inner-item
-  //-       select(filter-status)
-  //-         option(value="") Trạng thái
-  //-         option(value="active") Hoạt động
-  //-         option(value="inactive") Tạm dừng
-  //-     .inner-item
-  //-       select(filter-created-by)
-  //-         option(value="") Người tạo
-  //-         each item in accountAdminList
-  //-           option(value=item.id) #{item.fullName}
-  //-     .inner-item.inner-date
-  //-       input(type="date" filter-start-date)
-  //-       span -
-  //-       input(type="date" filter-end-date)
-  //-     .inner-item.inner-reset(filter-reset)
-  //-       <i class="fa-solid fa-rotate-left"></i> Xóa bộ lọc
+  .section-4
+    .inner-wrap
+      .inner-item.inner-label
+        <i class="fa-solid fa-filter"></i> Bộ lọc
+      .inner-item
+        select(filter-status)
+          option(value="") Trạng thái
+          option(value="active") Hoạt động
+          option(value="inactive") Tạm dừng
+      .inner-item
+        select(filter-created-by)
+          option(value="") Người tạo
+          each item in accountAdminList
+            option(value=item.id) #{item.fullname}
+      .inner-item.inner-date
+         input(type="date" filter-start-date)
+         span -
+         input(type="date" filter-end-date)
+      .inner-item.inner-reset(filter-reset)
+        <i class="fa-solid fa-rotate-left"></i> Xóa bộ lọc
   //- End Section 4
 
   //- Section 5
