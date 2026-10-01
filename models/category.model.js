@@ -12,7 +12,8 @@ const schema = new mongoose.Schema({
     createdBy: String,
     slug: {
         type: String,
-        slug: "name", unique: true
+        slug: "name",
+        unique: true
     },
     deleted: {
         type: Boolean,

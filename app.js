@@ -39,8 +39,12 @@ app.locals.permissions = [
     "dashboard-view",
     "category-view",
     "category-create",
+    "category-edit",
+    "category-delete",
     "tour-view",
     "tour-create",
+    "tour-edit",
+    "tour-delete",
     "tour-trash",
     "order-view",
     "user-view"

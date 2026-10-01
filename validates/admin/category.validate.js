@@ -26,7 +26,7 @@ module.exports.createPost = async (req, res, next) => {
 
 
     });
-    const { error } = schema.validate(req.body, { allowUnknown: true })
+    const { error } = schema.validate(req.body)
     if (error) {
         const errorMessage = error.details[0].message;
         res.json({

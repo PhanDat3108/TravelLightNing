@@ -2,10 +2,18 @@ const Category = require("../../models/category.model")
 const AccountAdmin = require("../../models/account-admin.model")
 const categoryHelper = require("../../helpers/category.helper")
 const moment = require("moment")
+const slugify = require('slugify')
+
 const { pathAdmin } = require("../../config/variable")
 module.exports.list = async (req, res) => {
     const accountAdmin = await AccountAdmin.find({}).select("_id fullname")
     console.log(accountAdmin)
+    if (req.query.createdBy) {
+
+    }
+    if (req.query.category) {
+
+    }
     const find = {
         deleted: false
     }
@@ -29,12 +37,44 @@ module.exports.list = async (req, res) => {
 
 
     }
+    // phan trang
+    const limit = 2;
+    let page = 1;
+    if (req.query.page) {
+        const currentpage = parseInt(req.query.page)
+        if (currentpage > 0) {
+            page = currentpage;
+        }
+    }
+    const skip = (page - 1) * limit;
+    const totalRecord = await Category.countDocuments(find);
+    const totalPage = Math.ceil(totalRecord / limit)
+    if (page > totalPage) {
+        page = totalPage;
+    }
+    const pagination = {
+        skip: skip,
+        totalRecord: totalRecord,
+        totalPage: totalPage,
+
+    }
+
+    // Tim kiem
+    if (req.query.keyword) {
+        const keyword = slugify(req.query.keyword, { lower: true });
+        const keywordRegex = new RegExp(keyword)
+        find.slug = keywordRegex
+    }
     if (Object.keys(dateFilter).length > 0) {
         find.createdAt = dateFilter;
     }
-    const categoryList = await Category.find(find).sort({
-        position: "asc"
-    })
+    const categoryList = await Category
+        .find(find)
+        .sort({
+            position: "asc"
+        })
+        .skip(skip)
+        .limit(limit)
 
     for (const item of categoryList) {
         if (item.createdBy) {
@@ -57,6 +97,7 @@ module.exports.list = async (req, res) => {
     res.render('admin/pages/category-list', {
         categoryList: categoryList,
         accountAdminList: accountAdmin,
+        pagination: pagination
     })
 
 }
