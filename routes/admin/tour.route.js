@@ -17,13 +17,16 @@ router.post('/create', upload.fields([
     { name: 'avatar', maxCount: 1 },
     { name: 'images', maxCount: 10 }
 ]), tourController.createPost
-)
+);
 router.patch('/edit/:id', upload.fields([
     { name: 'avatar', maxCount: 1 },
     { name: 'images', maxCount: 10 }
 ]), tourController.editPatch
 )
-
+    ;
+router.patch('/delete/:id', tourController.deletePatch
+)
+    ;
 router.get('/trash', tourController.trash
 )
 

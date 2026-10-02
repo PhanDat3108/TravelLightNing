@@ -231,9 +231,80 @@ module.exports.editPatch = async (req, res) => {
         });
     }
 }
+module.exports.deletePatch = async (req, res) => {
+    try {
+        const id = req.params.id;
+        const deletedBy = req.account.id;
+        const tourDetail = await Tour.findOne({
+            _id: id,
+            deleted: false
+        })
+        if (tourDetail) {
+            await Tour.updateOne({ _id: id, deleted: false }, {
+                deleted: true,
+
+                deletedBy: deletedBy,
+                deletedAt: Date.now()
+
+            })
+            req.flash("success", "Xoa thanh cong")
+
+            res.json({
+                code: "success",
+                message: "Xoa thanh cong"
+            })
+        }
+        else {
+            res.json({
+                code: "error",
+                message: "Id khong hop le"
+            })
+        }
+
+
+    }
+    catch {
+        res.json({
+            code: "error",
+            message: "Lỗi khi xoá"
+        })
+    }
+}
 module.exports.trash = async (req, res) => {
+
+
+    const find = {
+        deleted: true,
+
+    }
+
+
+    const tourList = await Tour.find(find
+
+    )
+        .sort({ deletedAt: "desc" });
+
+    for (const item of tourList) {
+        if (item.createdBy) {
+            const createdByFullName = await AccountAdmin.findOne({ _id: item.createdBy })
+            item.createdByFullName = createdByFullName.fullname;
+
+
+        }
+        if (item.deletedBy) {
+            const deletedByFullName = await AccountAdmin.findOne({ _id: item.deletedBy })
+            item.deletedByFullName = deletedByFullName.fullname;
+        }
+
+
+        item.createdAtFormat = moment(item.createdAt).format("HH:mm - DD/MM/YYYY")
+        item.deletedAtFormat = moment(item.deletedAt).format("HH:mm - DD/MM/YYYY")
+
+    }
+
     res.render('admin/pages/tour-trash', {
-        pageTitle: "Thùng rác",
-        tourList: []
+        pageTitle: "Quản lý tour",
+        tourList: tourList,
     })
 }
+
