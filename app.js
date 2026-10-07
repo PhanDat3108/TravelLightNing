@@ -57,6 +57,11 @@ app.use(cookieParser("Lololololo"));
 app.use(session({ secret: "Lololololo", resave: false, saveUninitialized: true, cookie: { maxAge: 60000 } }));
 app.use(flash());
 
+app.use((req, res, next) => {
+    res.locals.messages = req.flash();
+    next();
+});
+
 app.locals.pathAdmin = variableConfig.pathAdmin;
 
 app.get('/', (req, res) => {

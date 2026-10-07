@@ -8,12 +8,7 @@ const { pathAdmin } = require("../../config/variable")
 module.exports.list = async (req, res) => {
     const accountAdmin = await AccountAdmin.find({}).select("_id fullname")
     console.log(accountAdmin)
-    if (req.query.createdBy) {
 
-    }
-    if (req.query.category) {
-
-    }
     const find = {
         deleted: false
     }
@@ -229,39 +224,48 @@ module.exports.deletePatch = async (req, res) => {
 }
 module.exports.changeMultiPatch = async (req, res) => {
     try {
-        console.log(req.body);
         const option = req.body.option;
+        const ids = req.body.ids;
 
-        const arrid = req.body.ids;
         switch (option) {
             case "active":
             case "inactive":
                 await Category.updateMany(
-                    { _id: { $in: ids } }
+                    { _id: { $in: ids } },
+                    {
+                        status: option,
+                        updatedBy: req.account.id
+                    }
+                );
+                break;
 
-                ), {
-                    status: option
-                }
-            case "deleted":
+            case "delete":
                 await Category.updateMany(
-                    { _id: { $in: ids } }
+                    { _id: { $in: ids } },
+                    {
+                        deleted: true,
+                        deletedBy: req.account.id,
+                        deletedAt: Date.now()
+                    }
+                );
+                break;
 
-                ), {
-                    deleted: true,
-                    deletedBy: req.account.id,
-                    deletedAt: Date.now()
-                }
-
-
+            default:
+                return res.json({
+                    code: "error",
+                    message: "Hành động không hợp lệ!"
+                });
         }
-        arrid.forEach(item => {
 
-        });
-        req.flash("success", "Doi trang thai thanh cong")
+        req.flash("success", "Cập nhật trạng thái thành công!");
         res.json({
             code: "success",
-            message: "Chinh sua thanh cong"
-        })
+            message: "Cập nhật thành công!"
+        });
+    } catch (err) {
+        res.json({
+            code: "error",
+            message: "Đã có lỗi xảy ra, vui lòng thử lại!"
+        });
     }
-    catch (err) { }
 };

@@ -29,6 +29,31 @@ module.exports.list = async (req, res) => {
     if (req.query.category) {
         find.category = req.query.category
     }
+    if (req.query.keyword) {
+        const keyword = slugify(req.query.keyword, { lower: true })
+        const keywordRegex = new RegExp(keyword)
+        find.slug = keywordRegex
+
+    }
+    const limit = 5;
+    let page = 1;
+    if (req.query.page) {
+        const currentPage = parseInt(req.query.page)
+        if (currentPage > 0) {
+            page = currentPage;
+        }
+    }
+    const skip = (page - 1) * limit
+    const totalRecord = await Tour.countDocuments(find);
+    const totalPage = Math.ceil(totalRecord / limit) || 1;
+    if (page > totalPage) {
+        page = totalPage;
+    }
+    const pagination = {
+        skip: skip,
+        totalPage: totalPage,
+        totalRecord: totalRecord,
+    }
     const dateFilter = {};
 
     if (req.query.startDate) {
@@ -58,9 +83,11 @@ module.exports.list = async (req, res) => {
     if (Object.keys(dateFilter).length > 0) {
         find.createdAt = dateFilter;
     }
-    const tourList = await Tour.find(find
-
-    )
+    const tourList = await Tour
+        .find(find)
+        .sort({ position: "asc" })
+        .skip(skip)
+        .limit(limit);
 
     for (const item of tourList) {
         if (item.createdBy) {
@@ -83,7 +110,7 @@ module.exports.list = async (req, res) => {
         pageTitle: "Quản lý tour",
         tourList: tourList,
         accountAdminList: accountAdmin,
-        categoryList: categoryTree
+        categoryList: categoryTree, pagination: pagination
     })
 }
 
@@ -270,6 +297,78 @@ module.exports.deletePatch = async (req, res) => {
         })
     }
 }
+module.exports.undoPatch = async (req, res) => {
+    try {
+        const id = req.params.id;
+        const deletedBy = req.account.id;
+        const tourDetail = await Tour.findOne({
+            _id: id,
+            deleted: true
+        })
+        if (tourDetail) {
+            await Tour.updateOne({ _id: id, deleted: true }, {
+                deleted: false,
+
+                deletedBy: deletedBy,
+                deletedAt: Date.now()
+
+            })
+            req.flash("success", "Khoi phuc thanh cong")
+
+            res.json({
+                code: "success",
+                message: "Khoi phuc thanh cong"
+            })
+        }
+        else {
+            res.json({
+                code: "error",
+                message: "Id khong hop le"
+            })
+        }
+
+
+    }
+    catch {
+        res.json({
+            code: "error",
+            message: "Lỗi khi khoi phuc"
+        })
+    }
+}
+module.exports.deleteDestroyPatch = async (req, res) => {
+    try {
+        const id = req.params.id;
+        const deletedBy = req.account.id;
+        const tourDetail = await Tour.findOne({
+            _id: id,
+            deleted: true
+        })
+        if (tourDetail) {
+            await Tour.deleteOne({ _id: id, deleted: true })
+            req.flash("success", "Xoa vinh vien thanh cong")
+
+            res.json({
+                code: "success",
+                message: "Xoa thanh cong"
+            })
+        }
+        else {
+            res.json({
+                code: "error",
+                message: "Id khong hop le"
+            })
+        }
+
+
+    }
+    catch {
+        res.json({
+            code: "error",
+            message: "Lỗi khi xoá"
+        })
+    }
+}
 module.exports.trash = async (req, res) => {
 
 
@@ -308,3 +407,80 @@ module.exports.trash = async (req, res) => {
     })
 }
 
+module.exports.changeTrashMultiPatch = async (req, res) => {
+    try {
+        const option = req.body.option;
+        const ids = req.body.ids;
+
+        switch (option) {
+            case "undo":
+                await Tour.updateMany(
+                    { _id: { $in: ids } },
+                    {
+                        deleted: false,
+                        updatedBy: req.account.id
+                    }
+                );
+                req.flash("success", "Khôi phục các tour thành công!");
+                break;
+
+            case "delete-destroy":
+                await Tour.deleteMany({
+                    _id: { $in: ids }
+                });
+                req.flash("success", "Xóa vĩnh viễn các tour thành công!");
+                break;
+
+            default:
+                return res.json({
+                    code: "error",
+                    message: "Hành động không hợp lệ!"
+                });
+        }
+
+        res.json({
+            code: "success",
+            message: "Thực hiện thành công!"
+        });
+    } catch (err) {
+        res.json({
+            code: "error",
+            message: "Đã có lỗi xảy ra!"
+        });
+    }
+};
+module.exports.changeMultiPatch = async (req, res) => {
+    const { option, ids } = req.body;
+    const updatedBy = req.account.id;
+    switch (option) {
+        case "active":
+        case "inactive":
+            await Tour.updateMany({ _id: { $in: ids } }, {
+                status: option,
+                updatedBy: updatedBy
+            })
+            return res.json({
+                code: "success",
+                message: "Thay doi trang thai thanh cong"
+            });
+
+        case "delete":
+            await Tour.updateMany({ _id: { $in: ids } }, {
+                deleted: true,
+                deletedBy: updatedBy,
+                deletedAt: Date.now()
+
+            })
+            return res.json({
+                code: "success",
+                message: "Thay doi trang thai thanh cong"
+            });
+        default:
+            return res.json({
+                code: "error",
+                message: "Hành động không hợp lệ!"
+            });
+    }
+
+
+}

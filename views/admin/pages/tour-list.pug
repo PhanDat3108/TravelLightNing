@@ -45,20 +45,23 @@ block main
     //- Section 5
     .section-5
       .inner-wrap
-        .inner-change-status
+        .inner-change-status(
+        change-multi
+        data-api=`/${pathAdmin}/tour/change-multi`
+      )
           .inner-item
             select
               option(value="") -- Hành động --
               if (permissions.includes("tour-edit"))
-                option(value="") Hoạt động
-                option(value="") Dừng hoạt động
+                option(value="active") Hoạt động
+                option(value="inactive") Dừng hoạt động
               if (permissions.includes("tour-delete"))
-                option(value="") Xóa
+                option(value="delete") Xóa
           .inner-item
             button Áp dụng
         .inner-search
           <i class="fa-solid fa-magnifying-glass"></i>
-          input(type="text" placeholder="Tìm kiếm")
+          input(type="text" placeholder="Tìm kiếm" search)
         if (permissions.includes("tour-create"))
           .inner-button-create
             a(href=`/${pathAdmin}/tour/create`) + Tạo mới
@@ -74,7 +77,7 @@ block main
           thead
             tr
               th(class="inner-center")
-                input(type="checkbox" class="inner-check")
+                input(type="checkbox" class="inner-check" check-all)
               th Tên tour
               th Ảnh đại diện
               th(style="width: 130px") Giá
@@ -88,7 +91,7 @@ block main
             each item in tourList
               tr
                 td(class="inner-center")
-                  input(type="checkbox" class="inner-check")
+                  input(type="checkbox" class="inner-check" check-item=item.id)
                 td #{item.name}
                 td
                   img(src=item.avatar class="inner-avatar")
@@ -129,9 +132,10 @@ block main
 
     //- Section 7
     .section-7
-      span(class="inner-label") Hiển thị 1 - 9 của 78
-      select(class="inner-pagination")
-        option Trang 1
-        option Trang 2
-        option Trang 3
+      span(class="inner-label") Hiển thị #{pagination.skip + 1} - #{pagination.skip + tourList.length} của #{pagination.totalRecord}
+      select(class="inner-pagination" pagination)
+        - for (let i = 1; i <= pagination.totalPage; i++)
+          option(value=i) Trang #{i}
+  
+
     //- End Section 7

@@ -27,7 +27,17 @@ router.patch('/edit/:id', upload.fields([
 router.patch('/delete/:id', tourController.deletePatch
 )
     ;
+router.patch('/delete-destroy/:id', tourController.deleteDestroyPatch
+)
+    ;
+router.patch('/undo/:id', tourController.undoPatch
+)
+    ;
 router.get('/trash', tourController.trash
+)
+router.patch('/change-multi', tourController.changeMultiPatch
+)
+router.patch('/trash/change-multi', tourController.changeTrashMultiPatch
 )
 
 module.exports = router;
